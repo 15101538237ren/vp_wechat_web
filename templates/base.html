@@ -1,0 +1,42 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <script type="text/javascript" src="{% static "js/jquery-1.11.3.min.js" %}"></script>
+    <link rel="stylesheet" href="{% static "css/weui.min.css" %}"/>
+
+    <script>
+        function show_alert(title,content)
+        {
+            $("#alert_title").text(title);
+            $("#alert_content").text(content);
+            $("#alert_window").show();
+        }
+        function close_alert()
+        {
+            $("#alert_window").hide();
+        }
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="weui_dialog_alert" id="alert_window">
+        <div class="weui_mask"></div>
+        <div class="weui_dialog">
+            <div class="weui_dialog_hd" id="alert_title"><strong class="weui_dialog_title"></strong></div>
+            <div class="weui_dialog_bd"  id="alert_content"></div>
+            <div class="weui_dialog_ft">
+                <a href="javascript:void(0);" onclick="close_alert()" class="weui_btn_dialog primary">确定</a>
+            </div>
+        </div>
+    </div>
+    {% block content %}
+    {% endblock %}
+</body>
+<script>
+    close_alert();
+</script>
+</html>

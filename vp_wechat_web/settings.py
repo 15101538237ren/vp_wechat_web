@@ -16,6 +16,7 @@ from os.path import normpath,join
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+AUTH_USER_MODEL = 'voiceprint.User'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -38,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'voiceprint',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -110,6 +112,6 @@ USE_TZ = True
 STATIC_ROOT = normpath(join(BASE_DIR,  'static','assets'))
 
 
-STATICFILES_DIRS = (normpath(join(BASE_DIR,  'static')))
+STATICFILES_DIRS = (normpath(join(BASE_DIR,  'static')),)
 
 STATIC_URL = '/static/'

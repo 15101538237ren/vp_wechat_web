@@ -1,24 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-        <title>WeUI</title>
-        <link rel="stylesheet" href="{% static "css/weui.min.css" %}"/>
-    </head>
-    <body>
-        <a href="#" class="weui_btn weui_btn_primary">按钮</a>
-        <a href="#" class="weui_btn weui_btn_disabled weui_btn_primary">按钮</a>
-        <a href="#" class="weui_btn weui_btn_warn">确认</a>
-        <a href="#" class="weui_btn weui_btn_disabled weui_btn_warn">确认</a>
-        <a href="#" class="weui_btn weui_btn_default">按钮</a>
-        <a href="#" class="weui_btn weui_btn_disabled weui_btn_default">按钮</a>
-        <div class="button_sp_area">
-            <a href="#" class="weui_btn weui_btn_plain_default">按钮</a>
-            <a href="#" class="weui_btn weui_btn_plain_primary">按钮</a>
-
-            <a href="#" class="weui_btn weui_btn_mini weui_btn_primary">按钮</a>
-            <a href="#" class="weui_btn weui_btn_mini weui_btn_default">按钮</a>
+{% extends "vp/account_base.html" %}
+{% load static from staticfiles %}
+{% block title %}Login{% endblock %}
+{% block head %}
+<script>
+    function href_to_register()
+    {
+        window.location.href='{% url 'voiceprint:register' %}';
+    }
+</script>
+{% endblock %}
+{% block ac_content %}
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Email</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="text" style="color:black">
+                </div>
+            </div>
         </div>
-    </body>
-</html>
+    </div>
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Password</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="password" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="width: 80%;padding-left: 10%;margin-top: 5%">
+       <button  id="registerBtn" class="weui_btn weui_btn_primary" style="background:rgb(0,160,255)">Register</button>
+
+    </div>
+{% endblock %}

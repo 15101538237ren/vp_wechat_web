@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block content %}
+    <div style="text-align:center;width:100%;height: 15%">
+        <img src="{% static "img/smartv.png" %}" width="70%" style="vertical-align:middle;margin-top: 2%"/>
+    </div>
+    {% block ac_content %}
+    {% endblock %}
+{% endblock %}

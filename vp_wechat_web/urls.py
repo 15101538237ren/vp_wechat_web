@@ -17,6 +17,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^vp/', include('voiceprint.urls')),
+    url(r'^vp/', include('voiceprint.urls', namespace="voiceprint")),
     url(r'^admin/', include(admin.site.urls)),
 ]

@@ -1,0 +1,74 @@
+{% extends "vp/account_base.html" %}
+{% load static from staticfiles %}
+{% block title %}Register{% endblock %}
+{% block head %}
+
+<script>
+    function href_to_login()
+    {
+        window.location.href='{% url 'voiceprint:login' %}';
+    }
+</script>
+{% endblock %}
+{% block ac_content %}
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Name</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="text" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Email</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="text" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Password</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="password" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Re-Password</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="password" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="width: 80%;padding-left: 10%;">
+        <div class="weui_cells_title" style="color:rgb(173,128,125)">Phone Number</div>
+        <div class="weui_cells weui_cells_form">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" type="tel" style="color:black">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="width: 80%;padding-left: 10%;margin-top: 5%">
+       <button  id="registerBtn" class="weui_btn weui_btn_primary" style="background:rgb(0,160,255)">Register</button>
+    </div>
+    <div style="width: 90%;text-align: right;margin-top: 3%;font-size: 14pt;margin-bottom: 10%">
+        <a href="javascript:void(0);" style="padding-right: 0;" onclick="href_to_login()">Login</a>
+    </div>
+{% endblock %}
