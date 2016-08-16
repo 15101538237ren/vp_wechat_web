@@ -12,7 +12,7 @@
         function show_alert(title,content)
         {
             $("#alert_title").text(title);
-            $("#alert_content").text(content);
+            $("#alert_content").html(content);
             $("#alert_window").show();
         }
         function close_alert()
@@ -23,6 +23,7 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    {% csrf_token %}
     <div class="weui_dialog_alert" id="alert_window">
         <div class="weui_mask"></div>
         <div class="weui_dialog">

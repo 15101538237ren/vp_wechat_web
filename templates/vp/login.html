@@ -7,6 +7,58 @@
     {
         window.location.href='{% url 'voiceprint:register' %}';
     }
+
+    function submit_log()
+    {
+        var csrf_token=$("input[name='csrfmiddlewaretoken']").val();
+        $.ajaxSetup({
+            dataType: "json",
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token );
+            }
+        });
+        //要提交的信息
+        var infos={};
+        var email=$("#email").val();
+        var password=$("#password").val();
+
+        infos["email"]=email;
+        infos["password"]=password;
+
+        var json_str = JSON.stringify(infos);
+
+        $.ajax({
+            type: "POST",
+            url: "/vp/login/",
+            data: {json_str: json_str},
+            success: function (result) {
+                if (result.code == 0) {
+                    handle_result_from_json(result);
+                }
+                else {
+                    var message_json=$.parseJSON(result.message);
+                    var message_arr=[];
+                    var split="<br/>";
+                    $.each(message_json, function (k, v) {
+                        message_arr.push(v);
+                    });
+                    var msg_str=message_arr.join(split);
+                    show_alert("警告",msg_str);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.table([{
+                    "错误类型": jqXHR,
+                    "错误信息": textStatus,
+                    "http状态": errorThrown
+                }])
+            }
+        });
+    }
+    function handle_result_from_json(result)
+    {
+        show_alert("title",result.message);
+    }
 </script>
 {% endblock %}
 {% block ac_content %}
@@ -15,7 +67,7 @@
         <div class="weui_cells weui_cells_form">
             <div class="weui_cell">
                 <div class="weui_cell_bd weui_cell_primary">
-                    <input class="weui_input" type="text" style="color:black">
+                    <input class="weui_input"   name="email" id="email"  type="text" style="color:black">
                 </div>
             </div>
         </div>
@@ -25,13 +77,15 @@
         <div class="weui_cells weui_cells_form">
             <div class="weui_cell">
                 <div class="weui_cell_bd weui_cell_primary">
-                    <input class="weui_input" type="password" style="color:black">
+                    <input class="weui_input" type="password"  name="password" id="password"  style="color:black">
                 </div>
             </div>
         </div>
     </div>
     <div style="width: 80%;padding-left: 10%;margin-top: 5%">
-       <button  id="registerBtn" class="weui_btn weui_btn_primary" style="background:rgb(0,160,255)">Register</button>
-
+       <button  id="registerBtn" class="weui_btn weui_btn_primary" style="background:rgb(0,160,255)" onclick="submit_log()">Log in</button>
+    </div>
+    <div style="width: 90%;text-align: right;margin-top: 3%;font-size: 14pt;margin-bottom: 10%">
+        <a href="javascript:void(0);" style="padding-right: 0;" onclick="href_to_register()">Register</a>
     </div>
 {% endblock %}
