@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-import json,urllib2,os
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
+import json,urllib2,os,threading
 from django.contrib import auth
-from voiceprint.handler import check_reg,json_response,check_log,get_request_full_url,ARTICLE_LIST
+from voiceprint.handler import check_reg,json_response,check_log,get_request_full_url,ARTICLE_LIST,convert_to_enroll
 from voiceprint.models import User
 from wechat_sign import Sign,APP_ID
 from vp_wechat_web.settings import BASE_DIR
 from django.core.urlresolvers import reverse
 # Create your views here.
+TOTAL_STEP=3
 def index(request):
 
     return render(request, 'vp/index.html',locals())
@@ -54,8 +56,10 @@ def download_media(request):
     access_token=sign.getAccessToken()
     url = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token="+access_token+"&media_id="+media_id
 
-    #print url
-    file_name = "file1.amr"
+    print url
+    user_id=request.user.id
+    now_step=request.user.step
+    file_name = str(user_id)+"_"+str(now_step)+".amr"
     u = urllib2.urlopen(url)
 
     f = open(dist_dir+file_name, 'wb')
@@ -77,15 +81,24 @@ def download_media(request):
         print status,
     f.close()
     print "%s download completed" %file_name
-    return json_response(0,"Login succeed!")
+    if now_step < TOTAL_STEP:
+        user = get_object_or_404(User, pk=user_id)
+        user.step=now_step+1
+        user.save()
+        url_of_record=reverse('voiceprint:record')
+        return json_response(0,url_of_record)
+    else:
+        threading.Thread(target=convert_to_enroll, args=user_id).start()
+        return json_response(1,"Voiceprint Enroll Done!")
+@require_GET
 def record(request):
-    if request.method == 'GET':
-        req_url=get_request_full_url(request)
-        sign = Sign(req_url)
-        sign_dict=sign.sign()
-        appid=APP_ID
-        article=ARTICLE_LIST[1]
-        print sign_dict['jsapi_ticket']
-        return render(request, 'vp/record.html',locals())
-    elif request.method == 'POST':
-        pass
+    req_url=get_request_full_url(request)
+    sign = Sign(req_url)
+    sign_dict=sign.sign()
+    appid=APP_ID
+    total_step=TOTAL_STEP
+    now_step=request.user.step
+    article=ARTICLE_LIST[now_step]
+    print "nowstep:"+str(now_step)
+    print sign_dict['jsapi_ticket']
+    return render(request, 'vp/record.html',locals())
