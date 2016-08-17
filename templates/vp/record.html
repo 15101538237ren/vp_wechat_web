@@ -135,17 +135,7 @@ wx.ready(function () {
     wx.stopVoice({
       localId: voice.localId
     });
-    $('#timer_div').hide();
-    $('#timer_div').timer('remove');
-
-    $("#record_btn").css( { "margin-right" : "38%" } );
-    $("#stop_btn").css( { "margin-right" : "38%" } );
-    $("#record_btn").show();
-
-    $("#upload_btn").hide();
-    $("#no_btn").hide();
-    $("#play_btn").hide();
-
+    uploaded_or_remove();
     voice.localId='';
   };
   //Play Done
@@ -159,17 +149,18 @@ wx.ready(function () {
   });
 
   //Upload
-  document.querySelector('#uploadVoice').onclick = function () {
+  document.querySelector('#upload_btn').onclick = function () {
     if (voice.localId == '') {
-      alert('请先使用 startRecord 接口录制一段声音');
+      alert('Please Record!');
       return;
     }
     wx.uploadVoice({
       localId: voice.localId,
       isShowProgressTips: 1,
       success: function (res) {
-        alert('上传语音成功，serverId 为' + res.serverId);
-        voice.serverId = res.serverId;
+        alert('Uploaded! serverId:' + res.serverId);
+        uploaded_or_remove();
+        //voice.serverId = res.serverId;
       }
     });
   };
@@ -206,7 +197,6 @@ function play()
 }
 function record_stop()
 {
-
     $("#upload_btn").show();
     $("#no_btn").show();
     $("#stop_btn").hide();
@@ -214,6 +204,20 @@ function record_stop()
     $("#play_btn").show();
     $("#record_btn").css( { "margin-right" : "7%" } );
     $("#stop_btn").css( { "margin-right" : "7%" } );
+}
+
+function uploaded_or_remove()
+{
+    $('#timer_div').hide();
+    $('#timer_div').timer('remove');
+
+    $("#record_btn").css( { "margin-right" : "38%" } );
+    $("#stop_btn").css( { "margin-right" : "38%" } );
+    $("#record_btn").show();
+
+    $("#upload_btn").hide();
+    $("#no_btn").hide();
+    $("#play_btn").hide();
 }
 $("#timer_div").hide();
 $("#stop_btn").hide();
