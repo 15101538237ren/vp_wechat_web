@@ -1,9 +1,228 @@
-{% extends "base.html" %}
+{% extends "vp/account_base.html" %}
 {% load static from staticfiles %}
 {% block title %}Record{% endblock %}
 {% block head %}
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}"/>
+    <script type="text/javascript" src="{% static "js/bootstrap.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/jweixin-1.0.0.js" %}"></script>
+    <script src="{% static "js/timer.jquery.min.js" %}"></script>
+    <style type="text/css">
+    p {color:rgb(32,125,247);font-weight:bold;}
+    span,.timer {font-size: 16pt;font-weight:bold;color: red;margin-right: 10%;vertical-align:middle;}
+    </style>
+    <script>
+    var voice = {
+        localId: '',
+        serverId: ''
+    };
+    var play_or_not=1;
+    var interval = null;
+    </script>
 {% endblock %}
-{% block content %}
-    录音开始!
+{% block ac_content %}
+    <div style="text-align:center;width:100%;height: 10%">
+        <img src="{% static "img/vp_enroll.png" %}" width="30%" style="margin-top: 1%"/>
+        <h4 class="weui_msg_title">Read 3 paragraphs to enroll voices!</h4>
+    </div>
+
+    <article class="weui_article" style="padding: 0">
+    <section>
+        <p>{{ article }}</p>
+    </section>
+    </article>
+
+    <div style="text-align:right;width:100%;height: 5%">
+        <div class="timer" id="timer_div" style="width: 30%;margin-right: 45%;display:inline-block"></div>
+        <span class="weui_msg_title">1/3</span>
+    </div>
+    <div id="btn_div" style="text-align:right;width:100%;height: 5%;margin-top: 1%">
+        <img id="upload_btn" src="{% static "img/ok.png" %}" style="width:13%;margin-right: 7%;padding-top: 5%"/>
+        <img  id="record_btn" src="{% static "img/record.png" %}" style="width:25%;margin-right: 7%;"/>
+        <img id="stop_btn" src="{% static "img/stop.png" %}" style="width:25%;margin-right: 7%;"/>
+        <img id="play_btn" src="{% static "img/play.png" %}" style="width:25%;margin-right: 7%;"/>
+        <img id="voice_small" src="{% static "img/voice_small.png" %}" style="width:25%;margin-right: 7%;"/>
+        <img id="no_btn" src="{% static "img/no.png" %}" style="width:13%;margin-right: 17%;padding-top: 5%"/>
+    </div>
+    <div style="text-align:center;width: 100%; margin-top: 5%;">
+       <button  id="finish_btn" class="weui_btn weui_btn_primary" style="background:rgb(0,160,255);width: 80%;" onclick="">Finish</button>
+    </div>
+{#    <button class="weui_btn weui_btn_primary" id="startRecord">startRecord</button>#}
+{#    <button class="weui_btn weui_btn_primary" id="stopRecord">stopRecord</button>#}
+{#    <button class="weui_btn weui_btn_primary" id="playVoice">playVoice</button>#}
+{#    <button class="weui_btn weui_btn_primary" id="pauseVoice">pauseVoice</button>#}
+{#    <button class="weui_btn weui_btn_primary" id="stopVoice">stopVoice</button>#}
+{#    <button class="weui_btn weui_btn_primary" id="uploadVoice">uploadVoice</button>  #}
+{#    <button class="weui_btn weui_btn_primary" id="downloadVoice">downloadVoice</button> #}
+{% endblock %}
+{% block end_script %}
+<script>
+/*
+* 注意：
+* 1. 所有的JS接口只能在公众号绑定的域名下调用，公众号开发者需要先登录微信公众平台进入“公众号设置”的“功能设置”里填写“JS接口安全域名”。
+* 2. 如果发现在 Android 不能分享自定义内容，请到官网下载最新的包覆盖安装，Android 自定义分享接口需升级至 6.0.2.58 版本及以上。
+* 3. 完整 JS-SDK 文档地址：http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
+*
+* 如有问题请通过以下渠道反馈：
+* 邮箱地址：weixin-open@qq.com
+* 邮件主题：【微信JS-SDK反馈】具体问题
+* 邮件内容说明：用简明的语言描述问题所在，并交代清楚遇到该问题的场景，可附上截屏图片，微信团队会尽快处理你的反馈。
+*/
+wx.config({
+debug: false,
+appId: '{{ appid }}',
+timestamp: {{ sign_dict.timestamp }},
+nonceStr: '{{ sign_dict.nonceStr }}',
+signature: '{{ sign_dict.signature }}',
+jsApiList: [
+'startRecord',
+'stopRecord',
+'onRecordEnd',
+'playVoice',
+'pauseVoice',
+'stopVoice',
+'uploadVoice',
+'downloadVoice'
+]
+});
+wx.ready(function () {
+ //Start Record
+  document.querySelector('#record_btn').onclick = function () {
+    $("#record_btn").hide();
+    $('#timer_div').show();
+    $('#timer_div').timer();
+    $("#stop_btn").show();
+    wx.startRecord({
+      cancel: function () {
+        alert('用户拒绝授权录音');
+      }
+    });
+  };
+  //Record Stop
+  document.querySelector('#stop_btn').onclick = function () {
+    record_stop();
+    wx.stopRecord({
+      success: function (res) {
+        voice.localId = res.localId;
+      },
+      fail: function (res) {
+        alert(JSON.stringify(res));
+      }
+    });
+  };
+  //Auto-Stop
+  wx.onVoiceRecordEnd({
+    complete: function (res) {
+      voice.localId = res.localId;
+      record_stop();
+      show_alert("Info",'Record auto no more than 1 min!');
+    }
+  });
+
+  //Play
+  document.querySelector('#play_btn').onclick = function () {
+    if (voice.localId == '') {
+      show_alert("Info",'No Record!');
+      return;
+    }
+    interval=setInterval(play, 333);
+    wx.playVoice({
+      localId: voice.localId
+    });
+  };
+
+  //Remove
+  document.querySelector('#no_btn').onclick = function () {
+    wx.stopVoice({
+      localId: voice.localId
+    });
+    $('#timer_div').hide();
+    $('#timer_div').timer('remove');
+
+    $("#record_btn").css( { "margin-right" : "38%" } );
+    $("#stop_btn").css( { "margin-right" : "38%" } );
+    $("#record_btn").show();
+
+    $("#upload_btn").hide();
+    $("#no_btn").hide();
+    $("#play_btn").hide();
+
+    voice.localId='';
+  };
+  //Play Done
+  wx.onVoicePlayEnd({
+    complete: function (res) {
+        clearInterval(interval);
+        $("#play_btn").show();
+        $("#voice_small").hide();
+      //show_alert("Info",res.localId + 'Play Done');
+    }
+  });
+
+  //Upload
+  document.querySelector('#uploadVoice').onclick = function () {
+    if (voice.localId == '') {
+      alert('请先使用 startRecord 接口录制一段声音');
+      return;
+    }
+    wx.uploadVoice({
+      localId: voice.localId,
+      isShowProgressTips: 1,
+      success: function (res) {
+        alert('上传语音成功，serverId 为' + res.serverId);
+        voice.serverId = res.serverId;
+      }
+    });
+  };
+  //Download
+  document.querySelector('#downloadVoice').onclick = function () {
+    if (voice.serverId == '') {
+      alert('请先使用 uploadVoice 上传声音');
+      return;
+    }
+    wx.downloadVoice({
+      serverId: voice.serverId,
+      success: function (res) {
+        alert('下载语音成功，localId 为' + res.localId);
+        voice.localId = res.localId;
+      }
+    });
+  };
+});
+function play()
+{
+    if (play_or_not)
+    {
+        $("#voice_small").show();
+        $("#play_btn").hide();
+        play_or_not=0;
+    }
+    else
+    {
+        $("#play_btn").show();
+        $("#voice_small").hide();
+        play_or_not=1;
+    }
+
+}
+function record_stop()
+{
+
+    $("#upload_btn").show();
+    $("#no_btn").show();
+    $("#stop_btn").hide();
+    $('#timer_div').timer('pause');
+    $("#play_btn").show();
+    $("#record_btn").css( { "margin-right" : "7%" } );
+    $("#stop_btn").css( { "margin-right" : "7%" } );
+}
+$("#timer_div").hide();
+$("#stop_btn").hide();
+$("#play_btn").hide();
+$("#voice_small").hide();
+$("#upload_btn").hide();
+$("#no_btn").hide();
+$("#finish_btn").hide();
+$("#record_btn").css( { "margin-right" : "38%" } );
+$("#stop_btn").css( { "margin-right" : "38%" } );
+</script>
 {% endblock %}

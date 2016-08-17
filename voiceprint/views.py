@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import json
 from django.contrib import auth
-from voiceprint.handler import check_reg,json_response,check_log
+from voiceprint.handler import check_reg,json_response,check_log,get_request_full_url,ARTICLE_LIST
 from voiceprint.models import User
+from wechat_sign import Sign,APP_ID
 # Create your views here.
 def index(request):
+
     return render(request, 'vp/index.html',locals())
 
 def register(request):
@@ -42,6 +44,12 @@ def login(request):
             return json_response(0,"Login succeed!")
 def record(request):
     if request.method == 'GET':
+        req_url=get_request_full_url(request)
+        sign = Sign(req_url)
+        sign_dict=sign.sign()
+        appid=APP_ID
+        article=ARTICLE_LIST[1]
+        print sign_dict['jsapi_ticket']
         return render(request, 'vp/record.html',locals())
     elif request.method == 'POST':
         pass
