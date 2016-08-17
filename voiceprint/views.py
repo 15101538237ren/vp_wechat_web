@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-import json
+import json,urllib2,os
 from django.contrib import auth
 from voiceprint.handler import check_reg,json_response,check_log,get_request_full_url,ARTICLE_LIST
 from voiceprint.models import User
 from wechat_sign import Sign,APP_ID
+from vp_wechat_web.settings import BASE_DIR
 # Create your views here.
 def index(request):
 
@@ -42,6 +43,39 @@ def login(request):
             user=auth.authenticate(username=email, password=password)
             auth.login(request,user)
             return json_response(0,"Login succeed!")
+def download_media(request):
+    dist_dir=BASE_DIR+os.sep+"static"+os.sep+"download"+os.sep
+
+    media_id=request.GET["media_id"]
+    req_url=get_request_full_url(request)
+    sign = Sign(req_url)
+    access_token=sign.getAccessToken()
+    url = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token="+access_token+"&media_id="+media_id
+
+    #print url
+    file_name = "file1.amr"
+    u = urllib2.urlopen(url)
+
+    f = open(dist_dir+file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8)*(len(status)+1)
+        print status,
+    f.close()
+    print "%s download completed" %file_name
+    return json_response(0,"Login succeed!")
 def record(request):
     if request.method == 'GET':
         req_url=get_request_full_url(request)

@@ -11,7 +11,7 @@ class Sign:
     def __init__(self, url):
         self.ret = {
             'nonceStr': self.__create_nonce_str(),
-            'jsapi_ticket': self.__getJsApiTicket(),
+            'jsapi_ticket': self.getJsApiTicket(),
             'timestamp': self.__create_timestamp(),
             'url': url
         }
@@ -21,7 +21,7 @@ class Sign:
 
     def __create_timestamp(self):
         return int(time.time())
-    def __getAccessToken(self):
+    def getAccessToken(self):
         at_path=BASE_DIR+os.sep+"static"+os.sep+"json"+os.sep+"access_token.json"
         access_token_file=open(at_path,"r")
         acc_tok_str=access_token_file.readline()
@@ -46,14 +46,14 @@ class Sign:
         else:
             access_token=access_token_json["access_token"]
         return access_token
-    def __getJsApiTicket(self):
+    def getJsApiTicket(self):
         jt_path=BASE_DIR+os.sep+"static"+os.sep+"json"+os.sep+"js_api_ticket.json"
         js_ticket_file=open(jt_path,"r")
         js_ticket_read_str=js_ticket_file.readline()
         js_ticket_file.close()
         js_ticket_read_json=json.loads(js_ticket_read_str)
         now_time=time.time()
-        access_token=self.__getAccessToken()
+        access_token=self.getAccessToken()
         if js_ticket_read_json["expire_time"] < now_time:
             params = urllib.urlencode({'type':'jsapi','access_token': access_token})
             jt_str = urllib.urlopen("https://api.weixin.qq.com/cgi-bin/ticket/getticket?%s" % params).read()

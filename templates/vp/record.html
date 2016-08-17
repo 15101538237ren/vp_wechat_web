@@ -158,8 +158,36 @@ wx.ready(function () {
       localId: voice.localId,
       isShowProgressTips: 1,
       success: function (res) {
-        alert('Uploaded! serverId:' + res.serverId);
-        uploaded_or_remove();
+        var csrf_token=$("input[name='csrfmiddlewaretoken']").val();
+        $.ajaxSetup({
+            dataType: "json",
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token );
+            }
+        });
+        $.ajax({
+            type: "GET",
+            url: "/vp/download_media/?media_id="+res.serverId,
+            success: function (result) {
+                if (result.code == 0) {
+                    show_alert('Info','Uploaded! serverId:' + res.serverId);
+                }
+                else {
+                    show_alert('Warning','Upload Error')
+                }
+                uploaded_or_remove();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                show_alert('Error','Big Upload Error!');
+                console.table([{
+                    "错误类型": jqXHR,
+                    "错误信息": textStatus,
+                    "http状态": errorThrown
+                }]);
+                uploaded_or_remove();
+            }
+        });
+
         //voice.serverId = res.serverId;
       }
     });
