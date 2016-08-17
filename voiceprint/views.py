@@ -6,6 +6,7 @@ from voiceprint.handler import check_reg,json_response,check_log,get_request_ful
 from voiceprint.models import User
 from wechat_sign import Sign,APP_ID
 from vp_wechat_web.settings import BASE_DIR
+from django.core.urlresolvers import reverse
 # Create your views here.
 def index(request):
 
@@ -42,7 +43,8 @@ def login(request):
         else:
             user=auth.authenticate(username=email, password=password)
             auth.login(request,user)
-            return json_response(0,"Login succeed!")
+            url_of_record=reverse('voiceprint:record')
+            return json_response(0,url_of_record)
 def download_media(request):
     dist_dir=BASE_DIR+os.sep+"static"+os.sep+"download"+os.sep
 
