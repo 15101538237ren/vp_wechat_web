@@ -2,9 +2,10 @@
 from django.http import HttpResponse, JsonResponse
 from django.contrib import auth
 from voiceprint.models import User
-import shlex,datetime,subprocess,time,os
-from voiceprint.views import TOTAL_STEP
+import shlex,datetime,subprocess,time,os,urllib2,time
 from vp_wechat_web.settings import BASE_DIR
+from wechat_sign import Sign,APP_ID
+TOTAL_STEP = 3
 DIR_PATH_ROOT = "/root/Voice/voices/"
 TIME_OUT_OF_EXEC=3000
 
@@ -50,7 +51,47 @@ def check_log(email,password):
     return message
 def json_response(code=0,message=None):
     return JsonResponse({"code": code, "message": message})
+def pure_download_media(request,verify=0):
+    dist_dir=BASE_DIR+os.sep+"static"+os.sep+"download"+os.sep
 
+    media_id=request.GET["media_id"]
+    req_url=get_request_full_url(request)
+    sign = Sign(req_url)
+    access_token=sign.getAccessToken()
+    url = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token="+access_token+"&media_id="+media_id
+
+    #print url
+    time_stamp=0
+    user_id=request.user.id
+    now_step=request.user.step
+    if verify==1:
+        time_stamp=int(time.time())
+        file_name = str(user_id)+"_verify_"+str(time_stamp)+".amr"
+    else:
+        file_name = str(user_id)+"_"+str(now_step)+".amr"
+    u = urllib2.urlopen(url)
+
+    f = open(dist_dir+file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8)*(len(status)+1)
+        print status,
+    f.close()
+    print "%s download completed" %file_name
+    if verify==1:
+        return time_stamp
 def get_request_full_url(request):
     return request.build_absolute_uri('?')
 def execute_command(cmdstring, cwd=None, timeout=None, shell=False):
@@ -112,7 +153,7 @@ def enroll_user(user_id):
     if ret_code == 0:
         print "user: " + str(user_id) + "s enrollment done!"
     else:
-        print "user: " + str(user_id) + "s enrollment has some error, rtn_code: %d!" % ret_code
+        print "user: " + str(user_id) + "s enrollment has some error, rtn_code:"+str(ret_code)
 def convert_to_enroll(user_id):
     convert_for_user(user_id)
     wrt_enroll_wav_list(user_id)
@@ -121,6 +162,23 @@ def audio_convert(source_path,dist_path):
     cmd='avconv -i '+source_path+' '+dist_path
     returncode=execute_command(cmd,cwd=DIR_PATH_ROOT,timeout=TIME_OUT_OF_EXEC)
     return returncode
+def convert_verify_user(user_id,time_stamp):
+    source_amr=BASE_DIR+os.sep+"static"+os.sep+"download"+os.sep+str(user_id)+"_verify_"+str(time_stamp)+".amr"
+    dist_wav=BASE_DIR+os.sep+"static"+os.sep+"wav"+os.sep+str(user_id)+"_verify_"+str(time_stamp)+".wav"
+    audio_convert(source_amr,dist_wav)
+    time.sleep(0.5)
+def verify_user(user_id,time_stamp):
+    dist_wav=BASE_DIR+os.sep+"static"+os.sep+"wav"+os.sep+str(user_id)+"_verify_"+str(time_stamp)+".wav"
+    model_path=BASE_DIR+os.sep+"static"+os.sep+"model"+os.sep+str(user_id)+".model"
+    score_path=BASE_DIR+os.sep+"static"+os.sep+"score"+os.sep+str(user_id)+"_verify_"+str(time_stamp)+".txt"
+    if os.path.exists(model_path):
+        verify_voiceprint(wav_path=dist_wav,vp_model_path=model_path,score_file_path=score_path)
+        time.sleep(0.5)
+        score_file=open(score_path,"r")
+        score=score_file.readline()
+        print "score:"+score
+        score_file.close()
+        return score
 def enroll_voiceprint(wavlistpath,output_model_path):
     cmd="./enroll "+wavlistpath+" "+output_model_path+" universal.model"
     returncode=execute_command(cmd,cwd=DIR_PATH_ROOT,timeout=TIME_OUT_OF_EXEC)

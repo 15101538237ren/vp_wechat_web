@@ -62,7 +62,8 @@
     }
     function handle_result_from_json(result)
     {
-        show_alert("title",result.message);
+        location.href =result.message;
+        show_alert('Success',"Register succeed!");
     }
 </script>
 {% endblock %}
