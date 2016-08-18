@@ -159,7 +159,7 @@ wx.ready(function () {
             url: "/vp/verify/?media_id="+res.serverId,
             success: function (result) {
                 if (result.code == 0) {
-                    show_alert('Success','Score: '+result.message);
+                    show_alert('Success',result.message);
                 }
                 else if(result.code == 1)
                 {

@@ -10,6 +10,7 @@ from vp_wechat_web.settings import BASE_DIR
 from django.core.urlresolvers import reverse
 # Create your views here.
 TOTAL_STEP = 3
+Threshold=1.0
 def index(request):
 
     return render(request, 'vp/index.html',locals())
@@ -86,7 +87,13 @@ def verify(request):
             #threading.Thread(target=convert_verify_user, args=(user_id,time_stamp)).start()
             convert_verify_user(user_id,time_stamp)
             score=verify_user(user_id,time_stamp)
-            return json_response(0,score)
+            score_res=float(score)
+            if score > 1.0:
+                rej_or_acc="Accepted!"
+            else:
+                rej_or_acc="Rejected!"
+            res = rej_or_acc+'<br/> Score: '+score
+            return json_response(0,res)
 @require_GET
 def record(request):
     req_url=get_request_full_url(request)
