@@ -86,9 +86,10 @@ def verify(request):
             user_id=request.user.id
             #threading.Thread(target=convert_verify_user, args=(user_id,time_stamp)).start()
             convert_verify_user(user_id,time_stamp)
-            score=verify_user(user_id,time_stamp)
-            score_res=float(score)
-            if score > 1.0:
+            score = verify_user(user_id,time_stamp)
+            score_res = float(score)
+            print "score: %f" score_res
+            if score_res > 1.5:
                 rej_or_acc="Accepted!"
             else:
                 rej_or_acc="Rejected!"
