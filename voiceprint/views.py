@@ -88,8 +88,8 @@ def verify(request):
             convert_verify_user(user_id,time_stamp)
             score = verify_user(user_id,time_stamp)
             score_res = float(score)
-            print "score: %f" score_res
-            if score_res > 1.5:
+            print "score: %f" % score_res
+            if score_res > 1.4:
                 rej_or_acc="Accepted!"
             else:
                 rej_or_acc="Rejected!"
